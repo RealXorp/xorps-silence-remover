@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ExtensionManifest Version="7.0" ExtensionBundleId="com.xorp.silenceremover"
+    ExtensionBundleVersion="1.0.0" ExtensionBundleName="Xorp's Silence Remover">
+  <ExtensionList>
+    <Extension Id="com.xorp.silenceremover.main" Version="1.0.0" />
+  </ExtensionList>
+  <ExecutionEnvironment>
+    <HostList>
+      <!-- PPRO = Premiere Pro. Version range covers recent releases (2021-2026). -->
+      <Host Name="PPRO" Version="[15.0,99.9]" />
+    </HostList>
+    <LocaleList>
+      <Locale Code="All" />
+    </LocaleList>
+    <RequiredRuntimeList>
+      <RequiredRuntime Name="CSXS" Version="9.0" />
+    </RequiredRuntimeList>
+  </ExecutionEnvironment>
+  <DispatchInfoList>
+    <Extension Id="com.xorp.silenceremover.main">
+      <DispatchInfo>
+        <Resources>
+          <MainPath>./client/index.html</MainPath>
+          <ScriptPath>./host/host.jsx</ScriptPath>
+          <CEFCommandLine>
+            <Parameter>--enable-nodejs</Parameter>
+            <Parameter>--mixed-context</Parameter>
+          </CEFCommandLine>
+        </Resources>
+        <Lifecycle>
+          <AutoVisible>true</AutoVisible>
+        </Lifecycle>
+        <UI>
+          <Type>Panel</Type>
+          <Menu>Xorp's Silence Remover</Menu>
+          <Geometry>
+            <Size>
+              <Height>720</Height>
+              <Width>420</Width>
+            </Size>
+            <MinSize>
+              <Height>500</Height>
+              <Width>360</Width>
+            </MinSize>
+          </Geometry>
+          <Icons>
+            <Icon Type="Normal">./client/icons/icon_normal.png</Icon>
+            <Icon Type="RollOver">./client/icons/icon_rollover.png</Icon>
+            <Icon Type="Darkened">./client/icons/icon_dark.png</Icon>
+          </Icons>
+        </UI>
+      </DispatchInfo>
+    </Extension>
+  </DispatchInfoList>
+</ExtensionManifest>

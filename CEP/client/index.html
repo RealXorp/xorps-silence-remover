@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Xorp's Silence Remover</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div id="app">
+
+    <!-- ---------------------------------------------------- Topbar -->
+    <header class="topbar">
+      <div class="brand">
+        <svg class="brand-mark" viewBox="0 0 26 26" fill="none" aria-hidden="true">
+          <rect x="1.5"  y="10" width="2.4" height="6"  rx="1.2" fill="var(--accent-lo)"/>
+          <rect x="5.3"  y="6"  width="2.4" height="14" rx="1.2" fill="var(--accent)"/>
+          <rect x="9.1"  y="2.5" width="2.4" height="21" rx="1.2" fill="var(--accent-hi)"/>
+          <!-- the cut -->
+          <rect x="12.4" y="1"  width="1.2" height="24" rx="0.6" fill="var(--cut)"/>
+          <rect x="14.5" y="3"  width="2.4" height="20" rx="1.2" fill="var(--accent-hi)"/>
+          <rect x="18.3" y="7"  width="2.4" height="12" rx="1.2" fill="var(--accent)"/>
+          <rect x="22.1" y="10.5" width="2.4" height="5" rx="1.2" fill="var(--accent-lo)"/>
+        </svg>
+        <span class="brand-text">
+          <span class="brand-name"><b>Xorp's</b> Silence Remover</span>
+          <span class="brand-tag">Auto silence removal</span>
+        </span>
+      </div>
+
+      <div class="seq" id="seqStatus" data-state="idle" title="Active sequence">
+        <span class="seq-dot"></span>
+        <span class="seq-name" id="seqName">No sequence</span>
+      </div>
+    </header>
+
+    <!-- ---------------------------------------------------- Detection -->
+    <section class="section">
+      <div class="section-head">
+        <h2 class="section-title">Detection</h2>
+        <span class="section-note">what counts as silence</span>
+      </div>
+
+      <label class="ctrl">
+        <div class="ctrl-row">
+          <span>Silence threshold</span>
+          <span class="val" id="thresholdVal">-40 dB</span>
+        </div>
+        <input type="range" id="threshold" min="-60" max="-10" step="1" value="-40" />
+      </label>
+
+      <label class="ctrl">
+        <div class="ctrl-row">
+          <span>Minimum silence length</span>
+          <span class="val" id="minDurVal">500 ms</span>
+        </div>
+        <input type="range" id="minDur" min="100" max="3000" step="50" value="500" />
+      </label>
+
+      <label class="ctrl">
+        <div class="ctrl-row">
+          <span>Padding <span style="color:var(--muted)">(keep around speech)</span></span>
+          <span class="val" id="paddingVal">80 ms</span>
+        </div>
+        <input type="range" id="padding" min="0" max="500" step="10" value="80" />
+      </label>
+    </section>
+
+    <!-- ---------------------------------------------------- Source -->
+    <section class="section">
+      <div class="section-head">
+        <h2 class="section-title">Source</h2>
+        <span class="section-note">what to scan</span>
+      </div>
+
+      <label class="field-label" for="scope">Range</label>
+      <div class="select-wrap">
+        <select id="scope" class="select">
+          <option value="entire">Entire sequence</option>
+          <option value="inout">In / Out range</option>
+          <option value="selected">Selected clip(s)</option>
+        </select>
+      </div>
+
+      <div class="subhead">
+        <span>Audio tracks</span>
+        <button id="btnRefreshTracks" class="linkbtn" type="button">Refresh</button>
+      </div>
+      <div id="trackList" class="track-list"></div>
+
+      <label class="checkbox-row">
+        <input type="checkbox" id="rippleDelete" checked />
+        <span>Ripple-delete gaps (close the space automatically)</span>
+      </label>
+    </section>
+
+    <!-- ---------------------------------------------------- Analyze + Preview -->
+    <section class="section preview" id="preview">
+      <div class="section-head">
+        <h2 class="section-title">Preview</h2>
+        <span class="section-note" id="summary"></span>
+      </div>
+
+      <button id="btnAnalyze" class="btn primary">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M3 12h3l2.5-7 4 15 3-11L21 12"/>
+        </svg>
+        Analyze silence
+      </button>
+
+      <div id="progressWrap" class="progress-wrap hidden">
+        <div id="progressBar" class="progress-bar"></div>
+      </div>
+
+      <div id="status" class="status"></div>
+
+      <div style="position:relative; margin-top:14px;">
+        <canvas id="waveform"></canvas>
+        <div class="preview-empty">Run Analyze to preview cuts</div>
+      </div>
+
+      <div class="legend">
+        <span><i class="swatch speech"></i> Speech · kept</span>
+        <span><i class="swatch silence"></i> Silence · cut</span>
+      </div>
+    </section>
+
+    <!-- ---------------------------------------------------- Action bar -->
+    <div class="actionbar">
+      <div class="btn-row">
+        <div class="apply-col">
+          <button id="btnApply" class="btn primary" disabled>
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/>
+              <path d="M20 4 8.5 15.5M14.5 14.5 20 20M8.5 8.5 12 12"/>
+            </svg>
+            Apply cuts
+          </button>
+        </div>
+        <div class="undo-col">
+          <button id="btnUndo" class="btn cut" title="How to undo">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button id="btnBatch" class="btn ghost">Batch sequences</button>
+        <button id="btnExportLog" class="btn ghost">Export cut log</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="js/CSInterface.js"></script>
+  <script src="js/silence-detect.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

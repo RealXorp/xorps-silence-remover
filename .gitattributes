@@ -1,0 +1,8 @@
+# Normalize line endings; keep binaries untouched
+* text=auto
+
+*.png binary
+*.ico binary
+*.exe binary
+*.zxp binary
+*.epr binary

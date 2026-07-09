@@ -1,0 +1,15 @@
+# Build artifacts / installers — attach these to GitHub Releases instead of committing
+dist/
+*.exe
+*.zxp
+
+# Local build tooling & internal docs — kept on disk, not published
+.claude/
+installer/
+PRODUCT.md
+docs/BUILD.md
+
+# OS / editor cruft
+Thumbs.db
+Desktop.ini
+.DS_Store
